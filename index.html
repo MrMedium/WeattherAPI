@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Widget</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #weather-widget {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 300px;
+        }
+
+        #location {
+            font-size: 20px;
+        }
+
+        #temperature {
+            font-size: 36px;
+        }
+
+        #description {
+            font-size: 18px;
+        }
+
+        #icon img {
+            max-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="weather-widget">
+        <h2>Local Weather</h2>
+        <div id="location"></div>
+        <div id="temperature"></div>
+        <div id="description"></div>
+        <div id="icon"></div>
+    </div>
+
+    <script>
+        // Replace with your own OpenWeatherMap API key
+        const apiKey = "YOUR_OPENWEATHERMAP_API_KEY";
+
+        // Get the user's location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(getWeather, showError);
+        } else {
+            document.getElementById("location").innerText = "Geolocation is not supported in this browser.";
+        }
+
+        // Get the weather data
+        function getWeather(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+                .then(response => response.json())
+                .then(data => {
+                    const location = data.name + ", " + data.sys.country;
+                    const temperature = data.main.temp + "°C";
+                    const description = data.weather[0].description;
+                    const icon = `<img src="https://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="${description}" />`;
+
+                    document.getElementById("location").innerText = location;
+                    document.getElementById("temperature").innerText = temperature;
+                    document.getElementById("description").innerText = description;
+                    document.getElementById("icon").innerHTML = icon;
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById("location").innerText = "Unable to fetch weather data.";
+                });
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("location").innerText = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("location").innerText = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("location").innerText = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("location").innerText = "An unknown error occurred.";
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
